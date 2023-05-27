@@ -1,5 +1,5 @@
-// MARK: - Game Engine
-// Place your game engine code here.
+
+// Place game engine code here.
 
 // MARK: - Game View Controller
 class GameViewController: UIViewController {
