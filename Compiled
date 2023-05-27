@@ -107,8 +107,13 @@ class GameScene: UIView {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        spaceship.applyForce(CGPoint(x: 0, y: -1))
+    spaceship.applyForce(CGPoint(x: 0, y: -1))
+    
+    if gameState == .playing {
+        score += 1
     }
+}
+
 
     func generateObstacle() {
         let randomY = CGFloat.random(in: 0...UIScreen.main.bounds.height)
