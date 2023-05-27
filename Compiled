@@ -34,7 +34,7 @@ class Spaceship {
         self.position = position
         self.velocity = CGPoint.zero
         self.acceleration = CGPoint.zero
-        self.imageView = UIImageView(image: UIImage(named: "Spaceship"))
+        self.imageView = UIImageView(image: UIImage(named: "Cybertruck"))
         self.imageView.frame = CGRect(origin: position, size: CGSize(width: 50, height: 50))
     }
 
@@ -47,7 +47,7 @@ class Spaceship {
         acceleration = CGPoint.zero
     }
 
-    func applyForce(_ force: CGPoint) {
+    func applyForce(_ force: @consuming CGPoint) {
         acceleration.x += force.x
         acceleration.y += force.y
     }
@@ -57,9 +57,9 @@ class Obstacle {
     var position: CGPoint
     let imageView: UIImageView
 
-    init(position: CGPoint) {
+    init(position: CGPoint, imageName: String) {
         self.position = position
-        self.imageView = UIImageView(image: UIImage(named: "Obstacle"))
+        self.imageView = UIImageView(image: UIImage(named: imageName))
         self.imageView.frame = CGRect(origin: position, size: CGSize(width: 50, height: 50))
     }
 
@@ -77,9 +77,9 @@ class PowerUp {
     var position: CGPoint
     let imageView: UIImageView
 
-    init(position: CGPoint) {
+    init(position: CGPoint, imageName: String) {
         self.position = position
-        self.imageView = UIImageView(image: UIImage(named: "PowerUp"))
+        self.imageView = UIImageView(image: UIImage(named: imageName))
         self.imageView.frame = CGRect(origin: position, size: CGSize(width: 50, height: 50))
     }
 
@@ -112,15 +112,14 @@ class GameScene: UIView {
 
     func generateObstacle() {
         let randomY = CGFloat.random(in: 0...UIScreen.main.bounds.height)
-        let obstacle = Obstacle(position
-        let obstacle = Obstacle(position: CGPoint(x: UIScreen.main.bounds.width, y: randomY))
+        let obstacle = Obstacle(position: CGPoint(x: UIScreen.main.bounds.width, y: randomY), imageName: "obstacle Image")
         obstacles.append(obstacle)
         self.addSubview(obstacle.imageView)
     }
 
     func generatePowerUp() {
         let randomY = CGFloat.random(in: 0...UIScreen.main.bounds.height)
-        let powerUp = PowerUp(position: CGPoint(x: UIScreen.main.bounds.width, y: randomY))
+        let powerUp = PowerUp(position: CGPoint(x: UIScreen.main.bounds.width, y: randomY), imageName: "powerUpImage")
         powerUps.append(powerUp)
         self.addSubview(powerUp.imageView)
     }
@@ -157,8 +156,6 @@ class GameScene: UIView {
             }
             if spaceship.imageView.frame.intersects(powerUp.imageView.frame) {
                 // Handle power up collection
-                // Increase score for example
-                score += 10
             }
         }
     }
@@ -176,95 +173,18 @@ enum GameState {
     case playing, stopped
 }
 
-class GameViewController: UIViewController {
-    var gameScene: GameScene!
-    var scoreLabel: UILabel!
-    var startButton: UIButton!
-    var stopButton: UIButton!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Setup gameScene
-        gameScene = GameScene(frame: view.bounds)
-        view.addSubview(gameScene)
-        
-        // Setup scoreLabel
-        scoreLabel = UILabel()
-        scoreLabel.frame = CGRect(x: 20, y: 40, width: 200, height: 40)
-        scoreLabel.text = "Score: \(score)"
-        scoreLabel.textColor = .white
-        view.addSubview(scoreLabel)
-
-        // Setup startButton
-        startButton = UIButton(type: .custom)
-        startButton.frame = CGRect(x: 20, y: view.bounds.height - 60, width: 80, height: 40)
-        startButton.setTitle("Start", for: .normal)
-        startButton.backgroundColor = .green
-        startButton.addTarget(self, action: #selector(startGame), for: .touchUpInside)
-        view.addSubview(startButton)
-
-        // Setup stopButton
-        stopButton = UIButton(type: .custom)
-        stopButton.frame = CGRect(x: view.bounds.width - 100, y: view.bounds.height - 60, width: 80, height: 40)
-        stopButton.setTitle("Stop", for: .normal)
-        stopButton.backgroundColor = .red
-        stopButton.addTarget(self, action: #selector(stopGame), for: .touchUpInside)
-        view.addSubview(stopButton)
-        
-        // Set up game loop timer
-        Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [
-        Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
-            self?.gameScene.gameLoop()
-            self?.updateScoreLabel()
+@main
+struct GameEngine {
+    static func main() {
+        let gameScene = GameScene(frame: UIScreen.main.bounds)
+        Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
+            gameScene.gameLoop()
         }
-    }
-
-    @objc func startGame() {
         gameScene.startGame()
     }
-
-    @objc func stopGame() {
-        gameScene.stopGame()
-    }
-
-    func updateScoreLabel() {
-        scoreLabel.text = "Score: \(score)"
-    }
 }
 
-class HomeViewController: UIViewController {
-    var playNowButton: UIButton!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
 
-        // Setup playNowButton
-        playNowButton = UIButton(type: .custom)
-        playNowButton.frame = CGRect(x: view.bounds.midX - 50, y: view.bounds.midY - 20, width: 100, height: 40)
-        playNowButton.setTitle("Play Now", for: .normal)
-        playNowButton.backgroundColor = .green
-        playNowButton.addTarget(self, action: #selector(playNow), for: .touchUpInside)
-        view.addSubview(playNowButton)
-    }
 
-    @objc func playNow() {
-        let gameViewController = GameViewController()
-        navigationController?.pushViewController(gameViewController, animated: true)
-    }
-}
 
-@main
-class GameEngine: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
-
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let homeViewController = HomeViewController()
-        let navigationController = UINavigationController(rootViewController: homeViewController)
-        window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = navigationController
-        window?.makeKeyAndVisible()
-
-        return true
-    }
-}
